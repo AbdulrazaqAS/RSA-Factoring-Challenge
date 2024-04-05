@@ -1,28 +1,48 @@
-#!/usr/bin/python3
+#!/usr/bin/env bash
 
-import sys
+check_factor()
+{
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
-if len(sys.argv) != 2:
-    print("Usage: factors <file>", file=sys.stderr)
-    exit()
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
 
-file = sys.argv[1]
-with open(file) as f:
-    for line in f:
-        number = int(line)
+        echo "$num$num1*$num2"
+}
 
-        if number % 2 == 0:
-            print(f"{number}={number // 2}*2")
-        elif number % 3 == 0:
-            print(f"{number}={number // 3}*3")
-        elif number % 5 == 0:
-            print(f"{number}={number // 5}*5")
-        elif number % 7 == 0:
-            print(f"{number}={number // 7}*7")
-        else:
-            div = 8
-            while number % div != 0:
-                div += 1
-            else:
-                print(f"{number}={number // div}*{div}")
+if [ $# -ne 1 ]
+then
+        echo 'Usage: factors <file>'
+        exit 1
+else
+
+        while read i
+        do
+
+                result=$(factor "$i")
+                check_factor $result
+
+        done < "$1"
+fi
